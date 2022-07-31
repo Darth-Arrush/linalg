@@ -1,6 +1,6 @@
 package linalg
 
-/*version: 0.0.0*/
+/*version: 0.1.0*/
 
 type Vector struct {
 	coordinates []complex128
@@ -12,6 +12,18 @@ type Matrix struct {
 
 type Vector3D struct {
 	coordinates [3]complex128
+}
+
+type Vector2D struct {
+	coordinates [2]complex128
+}
+
+type Matrix3D struct {
+	vectors [3]Vector3D
+}
+
+type Matrix2D struct {
+	vectors [2]Vector2D
 }
 
 func (v Vector) Add(v2 Vector) Vector {
@@ -70,12 +82,12 @@ func Cross(v Vector3D, v2 Vector3D) Vector3D {
 	return result
 }
 
-func Mul(m Matrix, v Vector) Vector {
-	var newVector Vector
-	for i := range v.coordinates {
-		newVector.Add(m.vectors[i].ConstMul(v.coordinates[i]))
+func Mul(m Matrix, v Vector) Matrix {
+	var newMatrix Matrix
+	for i := range m.vectors {
+		newMatrix.vectors[i] = FConstMul(newMatrix.vectors[i], v.coordinates[i])
 	}
-	return newVector
+	return newMatrix
 }
 
 func (m Matrix) Add(m2 Matrix) Matrix {
@@ -85,4 +97,51 @@ func (m Matrix) Add(m2 Matrix) Matrix {
 		}
 	}
 	return m
+}
+
+/*func (m Matrix) Mul(m2 Matrix) Matrix {
+	var newMatrix Matrix 
+	
+}*/
+
+func (m Matrix3D) Det3D() complex128 {
+	a := m.vectors[0].coordinates[0]
+	b := m.vectors[0].coordinates[1]
+	c := m.vectors[0].coordinates[2]
+	d := m.vectors[1].coordinates[0]
+	e := m.vectors[1].coordinates[1]
+	f := m.vectors[1].coordinates[2]
+	g := m.vectors[2].coordinates[0]
+	h := m.vectors[2].coordinates[1]
+	i := m.vectors[2].coordinates[2]
+	return a*e*i + b*f*g + c*d*h - c*e*g - b*d*i -  a*f*h
+}
+
+func FDet3D(m Matrix3D) complex128 {
+	a := m.vectors[0].coordinates[0]
+	b := m.vectors[1].coordinates[0]
+	c := m.vectors[2].coordinates[0]
+	d := m.vectors[0].coordinates[1]
+	e := m.vectors[1].coordinates[1]
+	f := m.vectors[2].coordinates[1]
+	g := m.vectors[0].coordinates[2]
+	h := m.vectors[1].coordinates[2]
+	i := m.vectors[2].coordinates[2]
+	return a*e*i + b*f*g + c*d*h - c*e*g - b*d*i -  a*f*h
+}
+
+func (m Matrix2D) Det2D() complex128 {
+	a := m.vectors[0].coordinates[0]
+	b := m.vectors[1].coordinates[0]
+	c := m.vectors[0].coordinates[1]
+	d := m.vectors[1].coordinates[1]
+	return a*d - b*c
+}
+
+func FDet2D(m Matrix2D) complex128 {
+	a := m.vectors[0].coordinates[0]
+	b := m.vectors[1].coordinates[0]
+	c := m.vectors[0].coordinates[1]
+	d := m.vectors[1].coordinates[1]
+	return a*d - b*c
 }

@@ -1,36 +1,25 @@
 package linalg
 
-/*version: 0.1.0*/
+/*Version 0.2.0*/
+/*Type system changed (more concise) and Matrix Multiplication added*/
 
-type Vector struct {
-	coordinates []complex128
-}
+type Vector []complex128
 
-type Matrix struct {
-	vectors []Vector
-}
+type Matrix [][]complex128
 
-type Vector3D struct {
-	coordinates [3]complex128
-}
+type Matrix3D [3][3]complex128
 
-type Vector2D struct {
-	coordinates [2]complex128
-}
+type Matrix2D [2][2]complex128
 
-type Matrix3D struct {
-	vectors [3]Vector3D
-}
+type Vector3D [3]complex128
 
-type Matrix2D struct {
-	vectors [2]Vector2D
-}
+type Vector2D [2]complex128
 
 func (v Vector) Add(v2 Vector) Vector {
-	if len(v.coordinates) == len(v2.coordinates) {
+	if len(v) == len(v2) {
 		var newVector Vector
-		for i := 0; i < len(v.coordinates); i += 1 {
-			newVector.coordinates[i] = v.coordinates[i] + v2.coordinates[i]
+		for i := 0; i < len(v); i += 1 {
+			newVector[i] = v[i] + v2[i]
 		}
 		return newVector
 	} else {
@@ -40,10 +29,10 @@ func (v Vector) Add(v2 Vector) Vector {
 }
 
 func FAdd(v Vector, v2 Vector) Vector {
-	if len(v.coordinates) == len(v2.coordinates) {
+	if len(v) == len(v2) {
 		var newVector Vector
-		for i := 0; i < len(v.coordinates); i += 1 {
-			newVector.coordinates[i] = v.coordinates[i] + v2.coordinates[i]
+		for i := 0; i < len(v); i += 1 {
+			newVector[i] = v[i] + v2[i]
 		}
 		return newVector
 	} else {
@@ -53,95 +42,110 @@ func FAdd(v Vector, v2 Vector) Vector {
 }
 
 func (v Vector) ConstMul(constant complex128) Vector {
-	for i := 0; i < len(v.coordinates); i += 1 {
-		v.coordinates[i] *= constant
+	for i := 0; i < len(v); i += 1 {
+		v[i] *= constant
 	}
 	return v
 }
 
 func FConstMul(v Vector, constant complex128) Vector {
-	for i := 0; i < len(v.coordinates); i += 1 {
-		v.coordinates[i] *= constant
+	for i := 0; i < len(v); i += 1 {
+		v[i] *= constant
 	}
 	return v
 }
 
 func Dot(v Vector, v2 Vector) complex128 {
 	sum := 0 + 0i
-	for i := range v.coordinates {
-		sum += v.coordinates[i] * v2.coordinates[i]
+	for i := range v {
+		sum += v[i] * v2[i]
 	}
 	return sum
 }
 
 func Cross(v Vector3D, v2 Vector3D) Vector3D {
 	var result Vector3D
-	result.coordinates[0] = v.coordinates[1]*v2.coordinates[2] - v.coordinates[2]*v2.coordinates[1]
-	result.coordinates[1] = v.coordinates[2]*v2.coordinates[0] - v.coordinates[0]*v2.coordinates[2]
-	result.coordinates[2] = v.coordinates[0]*v2.coordinates[1] - v.coordinates[1]*v2.coordinates[0]
+	result[0] = v[1]*v2[2] - v[2]*v2[1]
+	result[1] = v[2]*v2[0] - v[0]*v2[2]
+	result[2] = v[0]*v2[1] - v[1]*v2[0]
 	return result
 }
 
 func Mul(m Matrix, v Vector) Matrix {
 	var newMatrix Matrix
-	for i := range m.vectors {
-		newMatrix.vectors[i] = FConstMul(newMatrix.vectors[i], v.coordinates[i])
+	for i := range m {
+		newMatrix[i] = FConstMul(newMatrix[i], v[i])
 	}
 	return newMatrix
 }
 
 func (m Matrix) Add(m2 Matrix) Matrix {
-	for i := range m.vectors {
-		for j := 0; j < len(m.vectors[i].coordinates); j += 1 {
-			m.vectors[i].coordinates[j] += m2.vectors[i].coordinates[j]
+	for i := range m {
+		for j := 0; j < len(m[i]); j += 1 {
+			m[i][j] += m2[i][j]
 		}
 	}
 	return m
 }
 
-/*func (m Matrix) Mul(m2 Matrix) Matrix {
-	var newMatrix Matrix 
-	
-}*/
+func (m Matrix) Mul(m2 Matrix) Matrix { /*m2 is on left if expressed in ordinary notation*/
+	var newMatrix Matrix
+	for i := 0; i < len(m); i += 1 {
+		for j := 0; j < len(m2); j += 1 {
+			newMatrix[i][j] = 0
+		}
+	}
+
+	for i := 0; i < len(m); i += 1 {
+		for j := 0; j < len(m2); j += 1 {
+			sum := 0 + 0i
+			for k := 0; k < len(m2); k += 1 {
+				sum += m[j][i] * m2[i][j]
+			}
+			newMatrix[i][j] = sum
+		}
+	}
+	return newMatrix
+}
 
 func (m Matrix3D) Det3D() complex128 {
-	a := m.vectors[0].coordinates[0]
-	b := m.vectors[0].coordinates[1]
-	c := m.vectors[0].coordinates[2]
-	d := m.vectors[1].coordinates[0]
-	e := m.vectors[1].coordinates[1]
-	f := m.vectors[1].coordinates[2]
-	g := m.vectors[2].coordinates[0]
-	h := m.vectors[2].coordinates[1]
-	i := m.vectors[2].coordinates[2]
-	return a*e*i + b*f*g + c*d*h - c*e*g - b*d*i -  a*f*h
+	a := m[0][0]
+	b := m[0][1]
+	c := m[0][2]
+	d := m[1][0]
+	e := m[1][1]
+	f := m[1][2]
+	g := m[2][0]
+	h := m[2][1]
+	i := m[2][2]
+	return a*e*i + b*f*g + c*d*h - c*e*g - b*d*i - a*f*h
 }
 
 func FDet3D(m Matrix3D) complex128 {
-	a := m.vectors[0].coordinates[0]
-	b := m.vectors[1].coordinates[0]
-	c := m.vectors[2].coordinates[0]
-	d := m.vectors[0].coordinates[1]
-	e := m.vectors[1].coordinates[1]
-	f := m.vectors[2].coordinates[1]
-	g := m.vectors[0].coordinates[2]
-	h := m.vectors[1].coordinates[2]
-	i := m.vectors[2].coordinates[2]
-	return a*e*i + b*f*g + c*d*h - c*e*g - b*d*i -  a*f*h
+	a := m[0][0]
+	b := m[1][0]
+	c := m[2][0]
+	d := m[0][1]
+	e := m[1][1]
+	f := m[2][1]
+	g := m[0][2]
+	h := m[1][2]
+	i := m[2][2]
+	return a*e*i + b*f*g + c*d*h - c*e*g - b*d*i - a*f*h
 }
 
 func (m Matrix2D) Det2D() complex128 {
-	a := m.vectors[0].coordinates[0]
-	b := m.vectors[1].coordinates[0]
-	c := m.vectors[0].coordinates[1]
-	d := m.vectors[1].coordinates[1]
+	a := m[0][0]
+	b := m[1][0]
+	c := m[0][1]
+	d := m[1][1]
 	return a*d - b*c
 }
 
 func FDet2D(m Matrix2D) complex128 {
-	a := m.vectors[0].coordinates[0]
-	b := m.vectors[1].coordinates[0]
-	c := m.vectors[0].coordinates[1]
-	d := m.vectors[1].coordinates[1]
+	a := m[0][0]
+	b := m[1][0]
+	c := m[0][1]
+	d := m[1][1]
 	return a*d - b*c
 }

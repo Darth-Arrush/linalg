@@ -1,7 +1,7 @@
 package linalg
 
-/*Version 0.2.0*/
-/*Type system changed (more concise) and Matrix Multiplication added*/
+/*Version 0.2.1*/
+/*Matrix Multiplication fixed*/
 
 type Vector []complex128
 
@@ -88,10 +88,10 @@ func (m Matrix) Add(m2 Matrix) Matrix {
 	return m
 }
 
-func (m Matrix) Mul(m2 Matrix) Matrix { /*m2 is on left if expressed in ordinary notation*/
-	var newMatrix Matrix
-	for i := 0; i < len(m); i += 1 {
-		for j := 0; j < len(m2); j += 1 {
+func (m Matrix) Mul(m2 Matrix) Matrix { /*m is on left if expressed in ordinary notation*/
+	var newMatrix Matrix = [][]complex128{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}
+	for i := 0; i < len(m2); i += 1 {
+		for j := 0; j < len(m); j += 1 {
 			newMatrix[i][j] = 0
 		}
 	}
@@ -99,8 +99,8 @@ func (m Matrix) Mul(m2 Matrix) Matrix { /*m2 is on left if expressed in ordinary
 	for i := 0; i < len(m); i += 1 {
 		for j := 0; j < len(m2); j += 1 {
 			sum := 0 + 0i
-			for k := 0; k < len(m2); k += 1 {
-				sum += m[j][i] * m2[i][j]
+			for k := 0; k < len(m2[j]); k += 1 {
+				sum += m[i][k] * m2[k][j]
 			}
 			newMatrix[i][j] = sum
 		}
